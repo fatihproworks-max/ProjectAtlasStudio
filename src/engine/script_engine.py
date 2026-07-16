@@ -1,11 +1,11 @@
-import requests
+from engine.prompt_builder import PromptBuilder, ShortsPromptRequest
+from services.ollama_service import OllamaService
 
 
 class ScriptEngine:
 
     def __init__(self):
-        self.url = "http://localhost:11434/api/generate"
-        self.model = "gemma3:4b"
+        self.ollama = OllamaService()
 
     def generate(
         self,
@@ -17,41 +17,17 @@ class ScriptEngine:
         extra,
     ):
 
-        prompt = f"""
-You are a professional YouTube content writer.
-
-Platform:
-{platform}
-
-Topic:
-{topic}
-
-Duration:
-{duration}
-
-Style:
-{style}
-
-Voice:
-{voice}
-
-Extra Instructions:
-{extra}
-
-Write ONLY the final script.
-
-No explanations.
-No markdown.
-No titles.
-"""
-
-        response = requests.post(
-            self.url,
-            json={
-                "model": self.model,
-                "prompt": prompt,
-                "stream": False
-            }
+        request = ShortsPromptRequest(
+            topic=topic,
+            platform=platform,
+            duration=duration,
+            style=style,
+            voice=voice,
+            extra=extra,
         )
 
-        return response.json()["response"]
+        prompt = PromptBuilder.build_shorts(request)
+        print("ScriptEngine çalıştı")
+        print(prompt)
+
+        return self.ollama.generate(prompt)

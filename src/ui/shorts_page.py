@@ -1,3 +1,5 @@
+from controllers.shorts_controller import ShortsController
+
 from PySide6.QtWidgets import (
     QWidget,
     QLabel,
@@ -15,9 +17,11 @@ class ShortsPage(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.controller = ShortsController()
+
         layout = QVBoxLayout(self)
 
-        # Başlık
+        # Title
         title = QLabel("🎬 Shorts Studio")
         title.setStyleSheet("""
             font-size:28px;
@@ -35,7 +39,7 @@ class ShortsPage(QWidget):
         self.platform.addItems([
             "YouTube Shorts",
             "TikTok",
-            "Instagram Reels"
+            "Instagram Reels",
         ])
         layout.addWidget(self.platform)
 
@@ -51,7 +55,7 @@ class ShortsPage(QWidget):
             "3 min",
             "5 min",
             "10 min",
-            "Custom"
+            "Custom",
         ])
         layout.addWidget(self.duration)
 
@@ -64,14 +68,14 @@ class ShortsPage(QWidget):
             "Luxury",
             "Storytelling",
             "News",
-            "Cinematic"
+            "Cinematic",
         ])
         layout.addWidget(self.style)
 
         # Profile
         self.profile = QComboBox()
         self.profile.addItems([
-            "Project Atlas Prime"
+            "Project Atlas Prime",
         ])
         layout.addWidget(self.profile)
 
@@ -81,26 +85,28 @@ class ShortsPage(QWidget):
             "Atlas Documentary",
             "Atlas Mystery",
             "Kitten Female",
-            "Kitten Male"
+            "Kitten Male",
         ])
         layout.addWidget(self.voice)
 
-        # Ek Talimat
+        # Extra Prompt
         self.prompt = QTextEdit()
         self.prompt.setPlaceholderText(
             "Extra Instructions...\n\n"
             "Example:\n"
-            "- Make it cinematic\n"
-            "- Strong hook\n"
-            "- Netflix documentary style"
+            "- Strong Hook\n"
+            "- Cinematic\n"
+            "- Netflix Documentary Style"
         )
         self.prompt.setFixedHeight(120)
         layout.addWidget(self.prompt)
 
-        # Butonlar
+        # Buttons
         buttons = QHBoxLayout()
 
         self.generate = QPushButton("🚀 Generate Script")
+        self.generate.clicked.connect(self.generate_script)
+
         self.render = QPushButton("🎥 Render Video")
 
         buttons.addWidget(self.generate)
@@ -108,7 +114,40 @@ class ShortsPage(QWidget):
 
         layout.addLayout(buttons)
 
-        # Log Alanı
+        # Preview
+        self.preview = QTextEdit()
+        self.preview.setReadOnly(True)
+        self.preview.setPlaceholderText("Generated Script...")
+        layout.addWidget(self.preview)
+
+        # Logs
         self.log = QTextEdit()
         self.log.setPlaceholderText("Logs...")
+        self.log.setFixedHeight(120)
         layout.addWidget(self.log)
+    def generate_script(self):
+        print("Generate butonuna basıldı")
+
+        try:
+            self.log.append("Generating script...")
+
+            script = self.controller.generate(
+                topic=self.topic.text(),
+                duration=self.duration.currentText(),
+                style=self.style.currentText(),
+                platform=self.platform.currentText(),
+                voice=self.voice.currentText(),
+                extra=self.prompt.toPlainText(),
+            )
+
+            self.preview.setPlainText(script)
+
+            self.log.append("Done.")
+
+        except Exception as e:
+            print("HATA:", e)
+
+            import traceback
+            traceback.print_exc()
+
+            self.log.append(str(e))
