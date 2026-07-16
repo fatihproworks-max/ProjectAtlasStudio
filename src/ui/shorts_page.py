@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from controllers.shorts_controller import ShortsController
 
 from PySide6.QtWidgets import (
@@ -21,7 +23,6 @@ class ShortsPage(QWidget):
 
         layout = QVBoxLayout(self)
 
-        # Title
         title = QLabel("🎬 Shorts Studio")
         title.setStyleSheet("""
             font-size:28px;
@@ -29,12 +30,10 @@ class ShortsPage(QWidget):
         """)
         layout.addWidget(title)
 
-        # Topic
         self.topic = QLineEdit()
         self.topic.setPlaceholderText("Video Topic...")
         layout.addWidget(self.topic)
 
-        # Platform
         self.platform = QComboBox()
         self.platform.addItems([
             "YouTube Shorts",
@@ -43,7 +42,6 @@ class ShortsPage(QWidget):
         ])
         layout.addWidget(self.platform)
 
-        # Duration
         self.duration = QComboBox()
         self.duration.addItems([
             "15 sec",
@@ -59,7 +57,6 @@ class ShortsPage(QWidget):
         ])
         layout.addWidget(self.duration)
 
-        # Style
         self.style = QComboBox()
         self.style.addItems([
             "Documentary",
@@ -72,14 +69,12 @@ class ShortsPage(QWidget):
         ])
         layout.addWidget(self.style)
 
-        # Profile
         self.profile = QComboBox()
         self.profile.addItems([
             "Project Atlas Prime",
         ])
         layout.addWidget(self.profile)
 
-        # Voice
         self.voice = QComboBox()
         self.voice.addItems([
             "Atlas Documentary",
@@ -89,7 +84,6 @@ class ShortsPage(QWidget):
         ])
         layout.addWidget(self.voice)
 
-        # Extra Prompt
         self.prompt = QTextEdit()
         self.prompt.setPlaceholderText(
             "Extra Instructions...\n\n"
@@ -101,7 +95,6 @@ class ShortsPage(QWidget):
         self.prompt.setFixedHeight(120)
         layout.addWidget(self.prompt)
 
-        # Buttons
         buttons = QHBoxLayout()
 
         self.generate = QPushButton("🚀 Generate Script")
@@ -114,17 +107,17 @@ class ShortsPage(QWidget):
 
         layout.addLayout(buttons)
 
-        # Preview
         self.preview = QTextEdit()
         self.preview.setReadOnly(True)
         self.preview.setPlaceholderText("Generated Script...")
         layout.addWidget(self.preview)
 
-        # Logs
         self.log = QTextEdit()
+        self.log.setReadOnly(True)
         self.log.setPlaceholderText("Logs...")
         self.log.setFixedHeight(120)
         layout.addWidget(self.log)
+
     def generate_script(self):
         print("Generate butonuna basıldı")
 
