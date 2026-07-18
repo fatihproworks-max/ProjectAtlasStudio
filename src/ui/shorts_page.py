@@ -5,6 +5,7 @@ import json
 from controllers.shorts_controller import ShortsController
 from ui.shorts_detail_widget import ShortsDetailWidget
 from workers.script_worker import ScriptWorker
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget,
     QLabel,
@@ -14,6 +15,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QComboBox,
+    QScrollArea,
+    QFrame,
 )
 
 
@@ -24,7 +27,22 @@ class ShortsPage(QWidget):
         self.controller = ShortsController()
         self.worker = None
 
-        layout = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll.setFrameShape(QFrame.Shape.NoFrame)
+        outer.addWidget(self.scroll)
+
+        content = QWidget()
+        self.scroll.setWidget(content)
+
+        layout = QVBoxLayout(content)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(12)
 
         title = QLabel("🎬 Shorts Studio")
         title.setStyleSheet(
