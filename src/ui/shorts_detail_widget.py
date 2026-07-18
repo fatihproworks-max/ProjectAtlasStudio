@@ -11,11 +11,12 @@ class ShortsDetailWidget(QGroupBox):
         self._field = QTextEdit()
         self._field.setReadOnly(True)
         self._field.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self._field.setMinimumHeight(70)
-        self._field.setMaximumHeight(140)
+        self._field.setMinimumHeight(56)
+        self._field.setMaximumHeight(110)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 12, 8, 8)
+        layout.setContentsMargins(8, 10, 8, 8)
+        layout.setSpacing(6)
         layout.addWidget(self._field)
 
     def set_text(self, text: str) -> None:
