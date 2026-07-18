@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from controllers.shorts_controller import ShortsController
-
 from PySide6.QtWidgets import (
     QWidget,
     QLabel,
@@ -18,16 +17,17 @@ class ShortsPage(QWidget):
 
     def __init__(self):
         super().__init__()
-
         self.controller = ShortsController()
 
         layout = QVBoxLayout(self)
 
         title = QLabel("🎬 Shorts Studio")
-        title.setStyleSheet("""
+        title.setStyleSheet(
+            """
             font-size:28px;
             font-weight:bold;
-        """)
+        """
+        )
         layout.addWidget(title)
 
         self.topic = QLineEdit()
@@ -104,7 +104,6 @@ class ShortsPage(QWidget):
 
         buttons.addWidget(self.generate)
         buttons.addWidget(self.render)
-
         layout.addLayout(buttons)
 
         self.preview = QTextEdit()
@@ -134,13 +133,10 @@ class ShortsPage(QWidget):
             )
 
             self.preview.setPlainText(script)
-
             self.log.append("Done.")
 
         except Exception as e:
             print("HATA:", e)
-
             import traceback
             traceback.print_exc()
-
             self.log.append(str(e))
