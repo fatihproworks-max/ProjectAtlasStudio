@@ -27,6 +27,8 @@ class ShortsPage(QWidget):
         self.controller = ShortsController()
         self.worker = None
 
+        self.setMinimumSize(1200, 820)
+
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
@@ -141,16 +143,14 @@ class ShortsPage(QWidget):
         layout.addWidget(self.description_box)
         layout.addWidget(self.tags_box)
 
-        self.log = QTextEdit()
-        self.log.setReadOnly(True)
-        self.log.setPlaceholderText("Logs...")
-        self.log.setFixedHeight(120)
-        layout.addWidget(self.log)
+        self.status = QLabel("Ready.")
+        self.status.setStyleSheet("padding:8px; font-size:14px;")
+        layout.addWidget(self.status)
 
     def generate_script(self):
         self.generate.setEnabled(False)
         self.clear_output()
-        self.log.append("Generating script...")
+        self.set_status("Generating...")
 
         self.worker = ScriptWorker(
             topic=self.topic.text().strip(),
@@ -161,11 +161,14 @@ class ShortsPage(QWidget):
             extra=self.prompt.toPlainText().strip(),
             parent=self,
         )
-        self.worker.started_message.connect(self.log.append)
+        self.worker.started_message.connect(self.set_status)
         self.worker.finished_script.connect(self.on_script_finished)
         self.worker.failed.connect(self.on_script_failed)
         self.worker.finished.connect(self.on_worker_finished)
         self.worker.start()
+
+    def set_status(self, message: str) -> None:
+        self.status.setText(message)
 
     def clear_output(self) -> None:
         self.hook_box.clear_text()
@@ -179,7 +182,7 @@ class ShortsPage(QWidget):
             payload = json.loads(script)
         except json.JSONDecodeError:
             self.script_box.set_text(script)
-            self.log.append("JSON parse failed; raw output shown.")
+            self.set_status("JSON parse failed; raw output shown.")
             return
 
         self.hook_box.set_text(payload.get("hook", ""))
@@ -194,10 +197,10 @@ class ShortsPage(QWidget):
             tags_text = str(tags)
         self.tags_box.set_text(tags_text)
 
-        self.log.append(payload.get("status", "Done."))
+        self.set_status(payload.get("status", "Done."))
 
     def on_script_failed(self, error: str):
-        self.log.append(f"HATA: {error}")
+        self.set_status(f"HATA: {error}")
 
     def on_worker_finished(self):
         self.generate.setEnabled(True)
