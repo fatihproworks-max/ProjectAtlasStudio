@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
+
 from controllers.shorts_controller import ShortsController
+from ui.shorts_detail_widget import ShortsDetailWidget
 from workers.script_worker import ScriptWorker
 from PySide6.QtWidgets import (
     QWidget,
@@ -108,10 +111,17 @@ class ShortsPage(QWidget):
         buttons.addWidget(self.render)
         layout.addLayout(buttons)
 
-        self.preview = QTextEdit()
-        self.preview.setReadOnly(True)
-        self.preview.setPlaceholderText("Generated Script...")
-        layout.addWidget(self.preview)
+        self.hook_box = ShortsDetailWidget("🔥 Hook")
+        self.script_box = ShortsDetailWidget("📝 Script")
+        self.title_box = ShortsDetailWidget("🏷 Title")
+        self.description_box = ShortsDetailWidget("📄 Description")
+        self.tags_box = ShortsDetailWidget("🔍 Tags")
+
+        layout.addWidget(self.hook_box)
+        layout.addWidget(self.script_box)
+        layout.addWidget(self.title_box)
+        layout.addWidget(self.description_box)
+        layout.addWidget(self.tags_box)
 
         self.log = QTextEdit()
         self.log.setReadOnly(True)
@@ -121,8 +131,7 @@ class ShortsPage(QWidget):
 
     def generate_script(self):
         self.generate.setEnabled(False)
-        self.preview.clear()
-        self.log.clear()
+        self.clear_output()
         self.log.append("Generating script...")
 
         self.worker = ScriptWorker(
@@ -140,9 +149,34 @@ class ShortsPage(QWidget):
         self.worker.finished.connect(self.on_worker_finished)
         self.worker.start()
 
+    def clear_output(self) -> None:
+        self.hook_box.clear_text()
+        self.script_box.clear_text()
+        self.title_box.clear_text()
+        self.description_box.clear_text()
+        self.tags_box.clear_text()
+
     def on_script_finished(self, script: str):
-        self.preview.setPlainText(script)
-        self.log.append("Done.")
+        try:
+            payload = json.loads(script)
+        except json.JSONDecodeError:
+            self.script_box.set_text(script)
+            self.log.append("JSON parse failed; raw output shown.")
+            return
+
+        self.hook_box.set_text(payload.get("hook", ""))
+        self.script_box.set_text(payload.get("script", ""))
+        self.title_box.set_text(payload.get("title", ""))
+        self.description_box.set_text(payload.get("description", ""))
+
+        tags = payload.get("tags", [])
+        if isinstance(tags, list):
+            tags_text = ", ".join(str(tag) for tag in tags)
+        else:
+            tags_text = str(tags)
+        self.tags_box.set_text(tags_text)
+
+        self.log.append(payload.get("status", "Done."))
 
     def on_script_failed(self, error: str):
         self.log.append(f"HATA: {error}")
