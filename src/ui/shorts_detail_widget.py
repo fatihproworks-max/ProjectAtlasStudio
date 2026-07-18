@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import QGroupBox, QFormLayout, QTextEdit, QVBoxLayout
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QGroupBox, QTextEdit, QVBoxLayout
 
 
 class ShortsDetailWidget(QGroupBox):
@@ -9,12 +10,13 @@ class ShortsDetailWidget(QGroupBox):
         super().__init__(title)
         self._field = QTextEdit()
         self._field.setReadOnly(True)
-        self._field.setMinimumHeight(90)
+        self._field.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._field.setMinimumHeight(70)
+        self._field.setMaximumHeight(140)
 
         layout = QVBoxLayout(self)
-        form = QFormLayout()
-        form.addRow(self._field)
-        layout.addLayout(form)
+        layout.setContentsMargins(8, 12, 8, 8)
+        layout.addWidget(self._field)
 
     def set_text(self, text: str) -> None:
         self._field.setPlainText(text or "")
