@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import requests
 from requests import Session
 from requests.exceptions import RequestException, Timeout
@@ -29,49 +30,43 @@ class OllamaService:
     def is_running(self) -> bool:
 
         try:
-
             response = self.session.get(
                 f"{self.base_url}/api/tags",
                 timeout=5,
             )
-
             return response.status_code == 200
-
         except RequestException:
-
             return False
 
     def generate(self, prompt: str) -> str:
-
-        print("===== OLLAMA DEBUG =====")
-
         url = f"{self.base_url}/api/generate"
 
         payload = {
             "model": self.model,
             "prompt": prompt,
             "stream": False,
+            "format": "json",
         }
 
-        print("URL:", url)
-        print("Payload:", payload)
-
         try:
-
             response = self.session.post(
                 url,
                 json=payload,
                 timeout=self.timeout,
             )
-
-            print("Status:", response.status_code)
-            print("Response:", response.text)
-
             response.raise_for_status()
 
             data = response.json()
+            text = data.get("response", "").strip()
+            if not text:
+                raise RuntimeError("Ollama boş yanıt döndürdü.")
 
-            return data.get("response", "").strip()
+            try:
+                json.loads(text)
+            except json.JSONDecodeError as exc:
+                raise RuntimeError(f"Ollama JSON parse hatası: {exc}")
+
+            return text
 
         except Timeout:
             raise RuntimeError("Ollama zaman aşımına uğradı.")
