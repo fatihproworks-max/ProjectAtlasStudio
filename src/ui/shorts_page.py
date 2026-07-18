@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from controllers.shorts_controller import ShortsController
+from workers.script_worker import ScriptWorker
 from PySide6.QtWidgets import (
     QWidget,
     QLabel,
@@ -18,6 +19,7 @@ class ShortsPage(QWidget):
     def __init__(self):
         super().__init__()
         self.controller = ShortsController()
+        self.worker = None
 
         layout = QVBoxLayout(self)
 
@@ -118,25 +120,33 @@ class ShortsPage(QWidget):
         layout.addWidget(self.log)
 
     def generate_script(self):
-        print("Generate butonuna basıldı")
+        self.generate.setEnabled(False)
+        self.preview.clear()
+        self.log.clear()
+        self.log.append("Generating script...")
 
-        try:
-            self.log.append("Generating script...")
+        self.worker = ScriptWorker(
+            topic=self.topic.text().strip(),
+            duration=self.duration.currentText(),
+            style=self.style.currentText(),
+            platform=self.platform.currentText(),
+            voice=self.voice.currentText(),
+            extra=self.prompt.toPlainText().strip(),
+            parent=self,
+        )
+        self.worker.started_message.connect(self.log.append)
+        self.worker.finished_script.connect(self.on_script_finished)
+        self.worker.failed.connect(self.on_script_failed)
+        self.worker.finished.connect(self.on_worker_finished)
+        self.worker.start()
 
-            script = self.controller.generate(
-                topic=self.topic.text(),
-                duration=self.duration.currentText(),
-                style=self.style.currentText(),
-                platform=self.platform.currentText(),
-                voice=self.voice.currentText(),
-                extra=self.prompt.toPlainText(),
-            )
+    def on_script_finished(self, script: str):
+        self.preview.setPlainText(script)
+        self.log.append("Done.")
 
-            self.preview.setPlainText(script)
-            self.log.append("Done.")
+    def on_script_failed(self, error: str):
+        self.log.append(f"HATA: {error}")
 
-        except Exception as e:
-            print("HATA:", e)
-            import traceback
-            traceback.print_exc()
-            self.log.append(str(e))
+    def on_worker_finished(self):
+        self.generate.setEnabled(True)
+        self.worker = None
